@@ -135,7 +135,7 @@
 
 # CRUD
 (each object '[products prices customers]
-  (each action '[list create update delete find]
+  (each action '[list create update delete retrieve]
     (let [sym (symbol object "/" action)]
       (case action
         'list
