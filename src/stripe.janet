@@ -63,7 +63,7 @@
 
 (defn- absolute-url [str params]
   (as-> (string/replace-all "/:id" "/%s" str) ?
-        (string/format ? (map string params))
+        (string/format ? ;(map string params))
         (url/join HOST ?)))
 
 
