@@ -1,6 +1,7 @@
 (import http)
 (import json)
 (import codec)
+(import jhydro)
 
 
 (def LOG_LEVEL_INFO "info")
@@ -124,6 +125,40 @@
     (log-request "DELETE" abs-url)
     (-> (http/delete abs-url :username *api-key*)
         (response))))
+
+
+# errors
+(def json/parser-error :json/parser-error)
+(def signature-verification-error :stripe/signature-verification-error)
+(def webhook-tolerance-error :stripe/webhook-tolerance-error)
+
+
+# webhooks
+(def- TOLERANCE 500)
+
+
+(defn signature [secret timestamp body]
+  (let [payload (string timestamp "." body)]
+    (codec/hmac/sha256 secret payload)))
+
+
+(defn webhook-event [secret body header &opt tolerance]
+  (default tolerance TOLERANCE)
+
+  (let [data (as-> (string/split "," header) ?
+                   (mapcat |(string/split "=" $) ?)
+                   (struct ;?))
+        timestamp (scan-number (get data "t"))
+        expected-signature (get data "v1")
+        signature (signature secret timestamp body)]
+
+    (unless (jhydro/util/= expected-signature signature)
+      (error {:type signature-verification-error})
+      (break))
+
+    (if (< timestamp (- (os/time) tolerance))
+      (error {:type webhook-tolerance-error})
+      (json/decode body true true))))
 
 
 # checkouts

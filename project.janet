@@ -3,6 +3,7 @@
   :description "A stripe client library for janet"
   :dependencies ["https://github.com/joy-framework/http"
                  "https://github.com/joy-framework/codec"
+                 "https://github.com/janet-lang/jhydro"
                  "https://github.com/janet-lang/json"]
   :author "Sean Walker"
   :license "MIT"
