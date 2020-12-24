@@ -68,24 +68,29 @@
 
 
 (defn- log-request [method url &opt body]
+  (when (or (= "debug" *log-level*)
+            (= "info" *log-level*))
+
+    (print "Sending " method " " url))
+
+  (when (and body (= "debug" *log-level*))
+    (print)
+    (print body)))
+
+
+(defn- log-response [{:status status :headers headers :body body}]
+  (when (= "info" *log-level*)
+    (print "Received: " status))
+
   (when (= "debug" *log-level*)
-    (print "Sending " method " " url)
+    (print "Received " status)
 
-    (when body
-      (print)
-      (print body))))
-
-
-(defn- log-response [response]
-  (when (= "debug" *log-level*)
-    (print "Received " (get response :status))
-
-    (eachp [k v] (get response :headers)
+    (eachp [k v] headers
       (print k ": " v))
 
     (print)
 
-    (string/format "%q" (get response :body))))
+    (printf "%M" (json/decode body true true))))
 
 
 (defn- response [res]
